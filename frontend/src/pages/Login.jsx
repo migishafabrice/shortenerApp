@@ -37,6 +37,7 @@ const handleLogin = async (e) => {
     if (response.data) {
       const accessToken = response.data.accessToken;
       localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('csrfToken', csrfToken);
       navigate('/dashboard');
     } else {
       setNotification({ type: 'error', message: `Login failed: ${response.data?.error || 'Unknown error'}` });

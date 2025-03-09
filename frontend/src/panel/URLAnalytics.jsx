@@ -6,7 +6,13 @@ const URLAnalytics = () => {
   const [shortenedUrl, setShortenedUrl] = useState("");
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const storedUser= JSON.parse(localStorage.getItem('user'));
+  useEffect(() => {
+    if (!storedUser) {
+      window.location.href = "/login"; // Redirect to login page
+      return null;
+    }
+  }, [storedUser]);
   useEffect(() => {
     // Example: You can replace the static URL with dynamic data
     if (shortenedUrl) {

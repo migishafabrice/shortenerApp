@@ -72,14 +72,14 @@ const loginUser = async (req, res) => {
 
     // Generate Access Token (short expiry)
     const accessToken = jwt.sign(
-      { userId: user.id,userFirstname:user.firstname,userLastname:user.lastname, email: user.email },
+      { userid: user.id,userFirstname:user.firstname,userLastname:user.lastname, email: user.email },
       SECRET_KEY,
       { expiresIn: "15m" }
     );
     
     // Generate Refresh Token (long expiry)
     const refreshToken = jwt.sign(
-      { userId: user.id,userFirstname:user.firstname,userLastname:user.lastname, email: user.email },
+      { userid: user.id,userFirstname:user.firstname,userLastname:user.lastname, email: user.email },
       REFRESH_TOKEN_SECRET,
       { expiresIn: "7d" }
     );
@@ -112,7 +112,7 @@ const refreshToken = (req, res) => {
 
     // Generate new access token
     const accessToken = jwt.sign(
-      { userId: decoded.userId,userFirstname: decoded.userFirstname,userLastname:decoded.userLastname,
+      { userid: decoded.userid,userFirstname: decoded.userFirstname,userLastname:decoded.userLastname,
          email: decoded.email },
       SECRET_KEY,
       { expiresIn: "15m" }

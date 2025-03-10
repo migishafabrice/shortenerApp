@@ -115,7 +115,7 @@ npm start
 - `id` (Primary key)
 - `userid` (Foreign key referencing `users.id`)
 - `long_url`
-- `short_code`
+- `short_code`(unique) indexed as short_code
 - `clicks`
 - `created_at`
 

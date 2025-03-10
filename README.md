@@ -126,11 +126,3 @@ npm start
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-## Acknowledgements
-
-Special thanks to all the contributors and resources that made this project possible!
-
----
-
-Happy shortening! 

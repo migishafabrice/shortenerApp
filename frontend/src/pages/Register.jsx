@@ -34,7 +34,12 @@ const Register = () => {
       setNotification({ type: 'error', message: 'Passwords do not match' });
       return;
     }
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
 
+    if (!regex.test(formData.password)) {
+      setNotification({ type: 'error', message: 'Password must be at least 6 characters, contain 1 uppercase letter, 1 number, and 1 special character.' });
+      return;
+    }
     try {
       
       const response = await axios.post('http://localhost:5000/auth/register', formData, {

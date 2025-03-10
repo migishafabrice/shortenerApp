@@ -43,7 +43,7 @@ const checkUrlUnique = async (url, shortUrl) => {
 };
 
 const shortenUrl = async (req, res) => {
-  const { url, userid } = req.body;
+  const { url, userid,name } = req.body;
 
   if (!url || !userid) {
     return res.status(400).json({ error: "URL and UserID are required" });
@@ -61,10 +61,10 @@ const shortenUrl = async (req, res) => {
       isUnique = true;
     }
   }
-
+console.log(name)
   db.query(
-    "INSERT INTO urls (userid, short_code, long_url, clicks) VALUES (?, ?, ?, ?)",
-    [userid, shortUrl, url, 0],
+    "INSERT INTO urls (userid, description_url, short_code, long_url, clicks) VALUES (?, ?, ?, ?, ?)",
+    [userid,name, shortUrl, url, 0],
     (err) => {
       if (err) {
         return res.status(500).json({ error: "Error inserting URL data into database" });

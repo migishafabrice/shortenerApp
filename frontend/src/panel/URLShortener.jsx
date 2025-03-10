@@ -7,7 +7,9 @@ const URLShortener = (user) => {
   const [shortenedUrl, setShortenedUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [isValid,setValid] = useState(false);
+  const [name, setName] = useState("");
   const [notification, setNotification] = useState({ message: "", type: "" });
+  
   const storedUser= JSON.parse(localStorage.getItem('user'));
   if (!storedUser) {
     window.location.href = "/login"; // Redirect to login page
@@ -17,7 +19,7 @@ const handleValidation = async (e) => {
     e.preventDefault();
 
     try {
-      setNotification({ message: "Checking if "+longUrl+" is valid URL", type: "info" });
+      setNotification({ message: "Checking if "+longUrl+" is valid URL", type: "success" });
       const response = await axios.get(`http://localhost:5000/short-url/valid?url=${longUrl}`);
       if (response.data.status) {
         setValid(true);
@@ -34,7 +36,7 @@ const handleValidation = async (e) => {
   const handleShortenUrl = (url, userid) => async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/short-url/shorten', {url,userid},
+      const response = await axios.post('http://localhost:5000/short-url/shorten', {url,userid,name},
        { headers: {
         'Content-Type': 'application/json',
         'CSRF-Token': localStorage.getItem('csrfToken'),
@@ -75,6 +77,14 @@ const handleValidation = async (e) => {
             <h3 className="text-2xl font-medium mb-4">Enter Your URL</h3>
             <form onSubmit={handleValidation}>
             <div className="flex flex-col sm:flex-row items-center space-x-4">
+            <textarea
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter description for your long URL here"
+                className="w-full sm:w-3/4 p-3 border border-gray-300 rounded-md"
+                required
+              />
               <input
                 type="url"
                 name="longUrl"
@@ -82,6 +92,7 @@ const handleValidation = async (e) => {
                 onChange={(e) => setLongUrl(e.target.value)}
                 placeholder="Enter your long URL here"
                 className="w-full sm:w-3/4 p-3 border border-gray-300 rounded-md"
+                required
               />
               <button
               type="submit"

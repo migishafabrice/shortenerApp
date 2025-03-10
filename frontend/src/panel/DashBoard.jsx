@@ -169,6 +169,7 @@ const handleUpdate = (shortUrl)=>async (e) => {
               <table className="min-w-full table-auto">
                 <thead className="bg-gray-200">
                   <tr>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Description URL</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Original URL</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Shortened URL</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Clicks</th>
@@ -178,8 +179,14 @@ const handleUpdate = (shortUrl)=>async (e) => {
                 <tbody>
                   {urls.map((url) => (
                     <tr key={url.id} className="border-t">
+                      <td className="px-6 py-4 text-sm text-gray-700">{url.description_url}</td>
                       <td className="px-6 py-4 text-sm text-gray-700">{url.long_url}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{url.short_code}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">
+                      <a   onClick={() => handleRedirect(url.short_code)()}
+                      style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
+                      {url.short_code}
+                      </a>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-700">{url.clicks}</td>
                       <td className="px-6 py-4 text-sm text-gray-700 flex items-center space-x-4">
                         {/* View Stats */}

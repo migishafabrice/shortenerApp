@@ -7,11 +7,18 @@ const authRoutes = require('./routes/authRoutes');
 const urlRoutes=require('./routes/urlRoutes');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
-
+// Define rate limiting rules
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  headers: true,
+});
 // Middleware setup
 app.use(express.json());        // Parse JSON request bodies
 app.use(cookieParser());        // Parse cookies (for CSRF token)
@@ -24,8 +31,8 @@ app.get('/csrf-token', (req, res) => {
 });
 
 // Authentication Routes (register, login, etc.)
-app.use('/auth', authRoutes);  // This handles both registration and login routes
-app.use('/short-url',urlRoutes); // URL Shortening routes
+app.use('/auth', authRoutes,rateLimit);  // This handles both registration and login routes
+app.use('/short-url',urlRoutes,rateLimit); // URL Shortening routes
 // Protected route (e.g., Dashboard)
 app.get('/user', jwtProtection, (req, res) => {
   res.json({ message: 'Welcome to the dashboard', user: req.user });  // You can access user data from req.user

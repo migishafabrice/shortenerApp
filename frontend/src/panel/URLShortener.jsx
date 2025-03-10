@@ -52,6 +52,17 @@ const handleValidation = async (e) => {
     }
     setLoading(false);
   };
+  const handleRedirect = (shortUrl)=>async() => {
+      try {
+        const response = await axios.get(`http://localhost:5000/short-url/redirect/${encodeURIComponent(shortUrl)}`);
+        if (response.data) {
+          window.open(response.data.long_url, '_blank');
+        }
+      }
+      catch (error) {
+        setNotification({ type: "error", message: "Error redirecting URL: " + (error.response?.data?.error || error.message) });
+      }
+    };
   return (
     <div className="flex">
       <Navbar />
@@ -87,10 +98,11 @@ const handleValidation = async (e) => {
               <div className="mt-6 p-4 bg-gray-50 rounded-md">
                 <h4 className="text-xl font-semibold">Your Shortened URL:</h4>
                 <div className="mt-2 text-blue-500">
-                  <a href={`https://${shortenedUrl}`} target="_blank" rel="noopener noreferrer">
-                    {shortenedUrl}
-                  </a>
-                </div>
+                <a   onClick={() => handleRedirect(shortenedUrl)()}
+                  style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
+                      {shortenedUrl}
+                      </a>
+               </div>
               </div>
             )}
           </div>
@@ -99,5 +111,4 @@ const handleValidation = async (e) => {
     </div>
   );
 };
-
 export default URLShortener;

@@ -61,14 +61,7 @@ const shortenUrl = async (req, res) => {
       isUnique = true;
     }
   }
-db.query("select * from urls where long_url=?", [url],(err,result)=>{
-  if(err){
-    return res.status(500).json({error:err.message});
-  }   
-  if(result.length>0){
-    return res.status(400).json({error:"URL already exists"});
-  }
-  else{
+
   db.query(
     "INSERT INTO urls (userid, short_code, long_url, clicks) VALUES (?, ?, ?, ?)",
     [userid, shortUrl, url, 0],
@@ -79,10 +72,10 @@ db.query("select * from urls where long_url=?", [url],(err,result)=>{
       res.json({ ok: true, result: { short_code: shortUrl } });
     }
   );
-  }
+  
 }
-  );
-};
+  
+
 const getUrls=async (req,res)=>{
   const {userid}=req.user;
   db.query("select * from urls where userid=?",[userid],(err,result)=>{
@@ -108,4 +101,77 @@ const deleteUrl = async (req, res) => {
     res.json({ ok: true, message: "URL deleted successfully." });
   });
 };
-module.exports = { validUrl, shortenUrl,getUrls,deleteUrl };
+const redirectUrl=async (req,res)=>{
+  const {shortUrl}=req.params;
+  db.query("select * from urls where short_code=?",[shortUrl],(err,result)=>{
+    if(err){
+      return res.status(500).json({error:err.message});
+    }
+    if(result.length===0){
+      return res.status(404).json({error:"URL not found"});
+    }
+    else
+    {
+      const clicks=result[0].clicks+1;
+      db.query("update urls set clicks=? where short_code=?",[clicks,shortUrl],(err)=>{
+        if(err){
+          return res.status(500).json({error:err.message});
+        }
+      });
+    }
+    const longUrl=result[0].long_url;
+    res.json({ok:true,long_url:longUrl});
+  });
+}
+const updateUrl = async (req, res) => {
+  const { shortUrl } = req.params;
+  const { long_url } = req.body; // Expect long_url instead of newUrl
+  db.query(
+    "UPDATE urls SET long_url = ? WHERE short_code = ?",
+    [long_url, shortUrl], // Use long_url here
+    (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Update failed" });
+      }
+      res.json({ ok: true, message: "URL updated successfully" });
+    }
+  );
+};
+const getAnalytics = async (req, res) => {
+  const { userid } = req.user;
+  db.query(
+    `SELECT 
+    COALESCE(SUM(urls.clicks), 0) AS totalClicks, 
+    COALESCE(COUNT(urls.id), 0) AS totalUrls, 
+    users.visits AS totalVisits
+ FROM users
+ LEFT JOIN urls ON users.id = urls.userid 
+ WHERE users.id = ?
+ GROUP BY users.id, users.visits`,
+[userid],
+    (err, result) => {
+      if (err) {
+        return res.status(500).json({ error:"Error fetching analytics data" });
+      }
+  
+      // Check if a result is returned
+      if (result.length === 0) {
+        return res.status(404).json({ error: "No data found for the given user." });
+      }
+      // Return the result
+      const {totalClicks, totalUrls, totalVisits} = result[0];
+      res.json({
+        ok: true,
+        totalClicks: totalClicks || 0,
+        totalUrls: totalUrls || 0,
+        totalVisits: totalVisits || 0,
+      });
+      
+    }
+  );
+  
+}
+module.exports = { validUrl, shortenUrl,getUrls,deleteUrl,redirectUrl,updateUrl,getAnalytics };

@@ -31,8 +31,8 @@ const registerUser = async (req, res) => {
 
       // Save user to the database
       db.query(
-        "INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)",
-        [firstName, lastName, email, hashedPassword],
+        "INSERT INTO users (firstname, lastname, email, visits, password) VALUES (?, ?, ?,?, ?)",
+        [firstName, lastName, email,0, hashedPassword],
         (err, result) => {
           if (err) {
             return res.status(500).json({ error: "Error saving data to database" });
@@ -91,7 +91,11 @@ const loginUser = async (req, res) => {
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-
+db.query("update users set visits=visits+1 where email=?",[email],(err,result)=>{
+  if(err){
+    return res.status(500).json({error:err.message});
+  }
+});
     // Send access token in response
     res.json({ accessToken });
   });

@@ -1,89 +1,93 @@
 // components/URLAnalytics.js
 import React, { useState, useEffect } from "react";
 import Navbar from "./NavBar";
-
+import { Line, Bar } from "react-chartjs-2";
+import { Chart as ChartJS } from "chart.js/auto";
+import axios from "axios";
 const URLAnalytics = () => {
-  const [shortenedUrl, setShortenedUrl] = useState("");
-  const [stats, setStats] = useState(null);
+  
   const [loading, setLoading] = useState(false);
-  const storedUser= JSON.parse(localStorage.getItem('user'));
+  const [urlsCount, setUrlsCount] = useState(""); // Track number of URLs registered
+  const [clicksOverTime, setClicksOverTime] = useState(""); // Track number of clicks over time
+  const [visits, setVisits] = useState(""); // Track number of visits
+  const [notification, setNotification] = useState(null);
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+
+  // Redirect if no user is logged in
   useEffect(() => {
     if (!storedUser) {
       window.location.href = "/login"; // Redirect to login page
       return null;
     }
   }, [storedUser]);
-  useEffect(() => {
-    // Example: You can replace the static URL with dynamic data
-    if (shortenedUrl) {
-      fetchAnalytics();
-    }
-  }, [shortenedUrl]);
 
-  const fetchAnalytics = async () => {
+  useEffect(() => {
+    fetchAnalyticsData(); // Fetch the analytics on component mount
+  }, []);
+
+  // Fetch analytics data (Example API URL)
+  const fetchAnalyticsData = async () => {
+    
     setLoading(true);
     try {
-      // Placeholder for actual URL analytics API
-      const response = await fetch(`https://api.shrtco.de/v2/shorten?url=${shortenedUrl}`);
-      const data = await response.json();
-      if (data.ok) {
-        setStats(data.result);  // Adjust based on actual API response
-      } else {
-        alert("Failed to fetch analytics.");
-      }
+      const accessToken = localStorage.getItem('accessToken');
+      const csrfToken = localStorage.getItem('csrfToken');
+      // Placeholder for your actual analytics data API
+      const response = await axios.get('http://localhost:5000/short-url/analytics',
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            authorization: `Bearer ${accessToken}`,
+            "CSRF-Token": csrfToken,
+          },
+          withCredentials: true,
+
+        }
+      );
+      
+      if (response.data) {
+        //setStats(data.result);
+        setUrlsCount(response.data.totalUrls); 
+        setClicksOverTime(response.data.totalClicks);
+        setVisits(response.data.totalVisits);
+        
+     } 
     } catch (error) {
-      alert("Error fetching analytics.");
+      setNotification({ type: 'error', message: `Error fetching analytics data: ${error.message}` });
     }
     setLoading(false);
   };
-
-  return (
+return (
     <div className="flex">
       <Navbar />
       <div className="flex-grow bg-gray-100 p-8">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-semibold mb-6">URL Analytics</h2>
-
-          {/* URL Analytics Section */}
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-2xl font-medium mb-4">Enter Shortened URL</h3>
-            <div className="flex flex-col sm:flex-row items-center space-x-4">
-              <input
-                type="url"
-                value={shortenedUrl}
-                onChange={(e) => setShortenedUrl(e.target.value)}
-                placeholder="Enter shortened URL here"
-                className="w-full sm:w-3/4 p-3 border border-gray-300 rounded-md"
-              />
-              <button
-                onClick={fetchAnalytics}
-                disabled={loading || !shortenedUrl}
-                className="sm:w-1/4 bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 disabled:bg-gray-400"
-              >
-                {loading ? "Fetching..." : "Get Analytics"}
-              </button>
+          <h2 className="text-4xl font-semibold mb-6">URL Analytics Dashboard</h2>
+{/* Notification */}
+          {notification && (  
+            <div className={`text-white p-3 rounded-md ${notification.type === 'error' ? 'bg-red-500' : 'bg-green-500'}`}>
+              {notification.message} 
             </div>
-
-            {/* Display Analytics Stats */}
-            {stats && !loading && (
-              <div className="mt-6 p-4 bg-gray-50 rounded-md">
-                <h4 className="text-xl font-semibold">Analytics for: {shortenedUrl}</h4>
-                <div className="mt-2">
-                  <p><strong>Clicks:</strong> {stats.clicks}</p>
-                  <p><strong>Last Click:</strong> {stats.lastClick}</p>
-                  <p><strong>Geography:</strong> {stats.geography}</p>
-                  {/* You can add more stats based on your API */}
-                </div>
+          )}           
+          {/* Analytics Summary */}
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-2xl font-medium mb-4">Summary</h3>
+            <div className="flex justify-between space-x-8">
+              <div className="bg-gray-50 p-4 rounded-md w-1/3">
+                <h4 className="text-xl font-semibold">Total Clicks</h4>
+                <p className="text-3xl">{clicksOverTime?clicksOverTime:"0"}</p>
+                
               </div>
-            )}
-
-            {/* No data available */}
-            {stats === null && !loading && (
-              <div className="mt-6 p-4 text-gray-500">
-                <p>No analytics data available for the given URL.</p>
+              <div className="bg-gray-50 p-4 rounded-md w-1/3">
+                <h4 className="text-xl font-semibold">Total URLs Registered</h4>
+                <p className="text-3xl">{urlsCount?urlsCount:"0"}</p>
               </div>
-            )}
-          </div>
+              <div className="bg-gray-50 p-4 rounded-md w-1/3">
+                <h4 className="text-xl font-semibold">Total Visits</h4>
+                <p className="text-3xl">{visits?visits:"0"}</p>
+              </div>
+            </div>
+          </div>         
         </div>
       </div>
     </div>
